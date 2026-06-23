@@ -723,6 +723,10 @@ def privacy():
 def refunds():
     return render_template("refunds.html")
 
+@app.route("/pricing")
+def pricing():
+    return render_template("pricing.html")
+
 if __name__ == "__main__":
     init_db()
     app.run(debug=True, port=5000)
