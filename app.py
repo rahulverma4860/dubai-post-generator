@@ -18,7 +18,8 @@ STRIPE_PUB_KEY       = os.getenv("STRIPE_PUBLISHABLE_KEY", "")
 BASE_URL             = os.getenv("BASE_URL", "http://localhost:5000")
 stripe.api_key       = STRIPE_SECRET_KEY
 app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
-app.config["SESSION_COOKIE_SECURE"] = False
+app.config["SESSION_COOKIE_SECURE"] = os.getenv("RENDER", False)
+app.config["SESSION_COOKIE_HTTPONLY"] = True
 
 # ── Database ───────────────────────────────────────────────────────────────────
 def init_db():
@@ -637,3 +638,6 @@ def success():
 if __name__ == "__main__":
     init_db()
     app.run(debug=True, port=5000)
+
+from werkzeug.middleware.proxy_fix import ProxyFix
+app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1)    
