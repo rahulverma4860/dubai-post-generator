@@ -2,12 +2,30 @@ from flask import Flask, render_template, request, jsonify, session, redirect, u
 import sqlite3
 import hashlib
 import secrets
+import bcrypt
+import time
+from collections import defaultdict
 from dotenv import load_dotenv
 from google import genai
 from google.genai import types
 import os
 import json
 import stripe
+from werkzeug.middleware.proxy_fix import ProxyFix
+import psycopg2
+import psycopg2.extras
+import sqlite3
+
+# ── Rate limiter ───────────────────────────────────────────────────────────────
+_rate_store = defaultdict(list)
+
+def is_rate_limited(key, max_requests=5, window=60):
+    now = time.time()
+    _rate_store[key] = [t for t in _rate_store[key] if now - t < window]
+    if len(_rate_store[key]) >= max_requests:
+        return True
+    _rate_store[key].append(now)
+    return False
 
 load_dotenv()
 
@@ -21,57 +39,103 @@ app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
 app.config["SESSION_COOKIE_SECURE"] = os.getenv("RENDER", False)
 app.config["SESSION_COOKIE_HTTPONLY"] = True
 
-# ── Database ───────────────────────────────────────────────────────────────────
+# ──────────────────────────Database────────────────────────────────────
+
+DATABASE_URL = os.getenv("DATABASE_URL", "")
+
+def get_conn():
+    if DATABASE_URL:
+        return psycopg2.connect(DATABASE_URL, sslmode="require")
+    return sqlite3.connect("users.db")
+
+def is_postgres():
+    return bool(DATABASE_URL)
+
 def init_db():
-    conn = sqlite3.connect("users.db")
-    c = conn.cursor()
-    c.execute("""CREATE TABLE IF NOT EXISTS users (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        email TEXT UNIQUE NOT NULL,
-        password TEXT NOT NULL,
-        credits INTEGER DEFAULT 1,
-        plan TEXT DEFAULT 'free',
-        created_at TEXT DEFAULT CURRENT_TIMESTAMP)""")
-    c.execute("""CREATE TABLE IF NOT EXISTS generations (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        user_id INTEGER,
-        property TEXT,
-        output TEXT,
-        layout TEXT,
-        created_at TEXT DEFAULT CURRENT_TIMESTAMP)""")
-    conn.commit()
-    conn.close()
+    if is_postgres():
+        conn = get_conn()
+        c = conn.cursor()
+        c.execute("""CREATE TABLE IF NOT EXISTS users (
+            id SERIAL PRIMARY KEY,
+            email TEXT UNIQUE NOT NULL,
+            password TEXT NOT NULL,
+            credits INTEGER DEFAULT 1,
+            plan TEXT DEFAULT 'free',
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)""")
+        c.execute("""CREATE TABLE IF NOT EXISTS generations (
+            id SERIAL PRIMARY KEY,
+            user_id INTEGER,
+            property TEXT,
+            output TEXT,
+            layout TEXT,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)""")
+        conn.commit(); conn.close()
+    else:
+        conn = sqlite3.connect("users.db")
+        c = conn.cursor()
+        c.execute("""CREATE TABLE IF NOT EXISTS users (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            email TEXT UNIQUE NOT NULL,
+            password TEXT NOT NULL,
+            credits INTEGER DEFAULT 1,
+            plan TEXT DEFAULT 'free',
+            created_at TEXT DEFAULT CURRENT_TIMESTAMP)""")
+        c.execute("""CREATE TABLE IF NOT EXISTS generations (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER,
+            property TEXT,
+            output TEXT,
+            layout TEXT,
+            created_at TEXT DEFAULT CURRENT_TIMESTAMP)""")
+        conn.commit(); conn.close()
 
 def get_user(email):
-    conn = sqlite3.connect("users.db")
+    conn = get_conn()
     c = conn.cursor()
-    c.execute("SELECT * FROM users WHERE email=?", (email,))
-    row = c.fetchone()
-    conn.close()
+    c.execute("SELECT id,email,password,credits,plan FROM users WHERE email=%s" if is_postgres() else
+              "SELECT id,email,password,credits,plan FROM users WHERE email=?", (email,))
+    row = c.fetchone(); conn.close()
     return {"id":row[0],"email":row[1],"password":row[2],"credits":row[3],"plan":row[4]} if row else None
 
-def create_user(email, password):
-    conn = sqlite3.connect("users.db")
+def get_user_by_id(user_id):
+    conn = get_conn()
     c = conn.cursor()
-    hashed = hashlib.sha256(password.encode()).hexdigest()
+    c.execute("SELECT id,email,credits,plan FROM users WHERE id=%s" if is_postgres() else
+              "SELECT id,email,credits,plan FROM users WHERE id=?", (user_id,))
+    row = c.fetchone(); conn.close()
+    return {"id":row[0],"email":row[1],"credits":row[2],"plan":row[3]} if row else None
+
+def create_user(email, password):
+    conn = get_conn()
+    c = conn.cursor()
+    hashed = bcrypt.hashpw(password.encode(), bcrypt.gensalt()).decode()
+    ph = "%s" if is_postgres() else "?"
     try:
-        c.execute("INSERT INTO users (email,password,credits) VALUES (?,?,1)", (email, hashed))
+        c.execute(f"INSERT INTO users (email,password,credits) VALUES ({ph},{ph},1)", (email, hashed))
         conn.commit(); conn.close(); return True
-    except sqlite3.IntegrityError:
+    except Exception:
         conn.close(); return False
 
 def deduct_credit(user_id):
-    conn = sqlite3.connect("users.db")
+    conn = get_conn()
     c = conn.cursor()
-    c.execute("UPDATE users SET credits=credits-1 WHERE id=? AND credits>0", (user_id,))
-    updated = c.rowcount
-    conn.commit(); conn.close()
+    ph = "%s" if is_postgres() else "?"
+    c.execute(f"UPDATE users SET credits=credits-1 WHERE id={ph} AND credits>0", (user_id,))
+    updated = c.rowcount; conn.commit(); conn.close()
     return updated > 0
 
-def save_generation(user_id, prop, output, layout):
-    conn = sqlite3.connect("users.db")
+def add_credits(email, credits):
+    conn = get_conn()
     c = conn.cursor()
-    c.execute("INSERT INTO generations (user_id,property,output,layout) VALUES (?,?,?,?)",
+    ph = "%s" if is_postgres() else "?"
+    c.execute(f"UPDATE users SET credits=credits+{ph}, plan='paid' WHERE email={ph}", (credits, email))
+    conn.commit(); conn.close()
+
+def save_generation(user_id, prop, output, layout):
+    conn = get_conn()
+    c = conn.cursor()
+    ph = "%s" if is_postgres() else "?"
+    c.execute(f"INSERT INTO generations (user_id,property,output,layout) VALUES ({ph},{ph},{ph},{ph})",
               (user_id, json.dumps(prop), json.dumps(output), layout))
     conn.commit(); conn.close()
 
@@ -497,13 +561,17 @@ def index():
         row = c.fetchone()
         conn.close()
         if row:
-            user = {"email": row[0], "credits": row[1]}
+            user = get_user_by_id(session["user_id"])
     return render_template("index.html", user=user)
 
 @app.route("/generate", methods=["POST"])
 def generate():
     if "user_id" not in session:
         return jsonify({"error": "Please sign up or log in", "auth_required": True}), 401
+
+    # Rate limiting — max 10 generations per minute per user
+    if is_rate_limited(f"gen_{session['user_id']}", max_requests=10, window=60):
+        return jsonify({"error": "Too many requests. Please wait a moment."}), 429
 
     conn = sqlite3.connect("users.db")
     c = conn.cursor()
@@ -514,26 +582,34 @@ def generate():
         return jsonify({"error": "No credits remaining", "no_credits": True}), 402
 
     data = request.get_json()
+
+    # Input sanitisation — strip and limit length
+    def clean(val, max_len=200):
+        return str(val or "").strip()[:max_len]
+
     prop = {
-        "agent_name":    data.get("agent_name", ""),
-        "community":     data.get("community", ""),
-        "listing_type":  data.get("listing_type", "for-sale"),
-        "property_type": data.get("property_type", "Apartment"),
-        "beds":          data.get("beds", "2"),
-        "size":          data.get("size", "1000"),
-        "price":         int(str(data.get("price", "1500000")).replace(",", "")),
-        "features":      data.get("features", ""),
-        "audience":      data.get("audience", "Investors"),
-        "tone":          data.get("tone", "Professional"),
+        "agent_name":    clean(data.get("agent_name"), 100),
+        "community":     clean(data.get("community"), 100),
+        "listing_type":  clean(data.get("listing_type", "for-sale"), 20),
+        "property_type": clean(data.get("property_type", "Apartment"), 50),
+        "beds":          clean(data.get("beds", "2"), 10),
+        "size":          clean(data.get("size", "1000"), 20),
+        "price":         int(str(data.get("price", "1500000")).replace(",", "")[:12]),
+        "features":      clean(data.get("features"), 500),
+        "audience":      clean(data.get("audience", "Investors"), 50),
+        "tone":          clean(data.get("tone", "Professional"), 50),
     }
 
     if not prop["community"] or not prop["agent_name"]:
         return jsonify({"error": "Community and agent name are required"}), 400
 
+    # Generate FIRST, deduct credit only on success
+    output, layout = generate_content(prop)
+
+    # Deduct credit after successful generation
     if not deduct_credit(session["user_id"]):
         return jsonify({"error": "No credits remaining", "no_credits": True}), 402
 
-    output, layout = generate_content(prop)
     save_generation(session["user_id"], prop, output, layout)
     return jsonify({"success": True, "output": output, "layout": layout})
 
@@ -558,9 +634,8 @@ def login():
     d = request.get_json()
     email = d.get("email", "").strip().lower()
     pwd = d.get("password", "")
-    hashed = hashlib.sha256(pwd.encode()).hexdigest()
     user = get_user(email)
-    if user and user["password"] == hashed:
+    if user and bcrypt.checkpw(pwd.encode(), user["password"].encode()):
         session["user_id"] = user["id"]
         return jsonify({"success": True, "credits": user["credits"]})
     return jsonify({"error": "Invalid email or password"}), 401
@@ -579,7 +654,8 @@ def get_credits():
     c.execute("SELECT credits FROM users WHERE id=?", (session["user_id"],))
     row = c.fetchone()
     conn.close()
-    return jsonify({"credits": row[0]}) if row else jsonify({"credits": 0})
+    user = get_user_by_id(session["user_id"])
+    return jsonify({"credits": user["credits"]}) if user else jsonify({"credits": 0})
 
 @app.route("/create-checkout", methods=["POST"])
 def create_checkout():
@@ -634,6 +710,34 @@ def success():
             pass
     return render_template("success.html")
 
+@app.route("/webhook", methods=["POST"])
+def webhook():
+    payload = request.data
+    sig = request.headers.get("Stripe-Signature", "")
+    webhook_secret = os.getenv("STRIPE_WEBHOOK_SECRET", "")
+    try:
+        if webhook_secret:
+            event = stripe.Webhook.construct_event(payload, sig, webhook_secret)
+        else:
+            event = stripe.Event.construct_from(
+                json.loads(payload), stripe.api_key
+            )
+        if event["type"] == "checkout.session.completed":
+            s = event["data"]["object"]
+            if s.get("payment_status") == "paid":
+                email = s.get("metadata", {}).get("user_email")
+                credits = int(s.get("metadata", {}).get("credits", 30))
+                if email:
+                    conn = sqlite3.connect("users.db")
+                    c = conn.cursor()
+                    c.execute("UPDATE users SET credits=credits+?, plan='paid' WHERE email=?",
+                              (credits, email))
+                    conn.commit()
+                    conn.close()
+    except Exception as e:
+        print(f"Webhook error: {e}")
+        return jsonify({"error": str(e)}), 400
+    return jsonify({"status": "ok"})
 
 if __name__ == "__main__":
     init_db()
