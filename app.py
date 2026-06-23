@@ -643,6 +643,7 @@ def get_credits():
     user = get_user_by_id(session["user_id"])
     return jsonify({"credits": user["credits"]}) if user else jsonify({"credits": 0})
 
+
 @app.route("/create-checkout", methods=["POST"])
 def create_checkout():
     if "user_id" not in session:
@@ -656,6 +657,7 @@ def create_checkout():
     pkg = packages.get(package, packages["starter"])
     user = get_user_by_id(session["user_id"])
     email = user["email"] if user else ""
+
     try:
         response = http_requests.post(
             "https://api.paddle.com/transactions",
@@ -665,18 +667,25 @@ def create_checkout():
             },
             json={
                 "items": [{"price_id": pkg["price_id"], "quantity": 1}],
-                "customer": {"email": email},
                 "checkout": {
                     "url": f"{BASE_URL}/success?package={package}&email={email}"
-                }
+                },
+                "customer": {"email": email}
             }
         )
+        print(f"Paddle response: {response.status_code} {response.text}")
         result = response.json()
+
+        if response.status_code != 201:
+            return jsonify({"error": result.get("error", {}).get("detail", "Paddle error")}), 500
+
         checkout_url = result.get("data", {}).get("checkout", {}).get("url")
         if not checkout_url:
-            return jsonify({"error": "Could not create checkout"}), 500
+            return jsonify({"error": "No checkout URL returned"}), 500
+
         return jsonify({"checkout_url": checkout_url})
     except Exception as e:
+        print(f"Checkout error: {type(e).__name__}: {e}")
         return jsonify({"error": str(e)}), 500
 
 @app.route("/success")
