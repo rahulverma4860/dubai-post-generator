@@ -690,12 +690,6 @@ def create_checkout():
 
 @app.route("/success")
 def success():
-    package = request.args.get("package", "starter")
-    email   = request.args.get("email", "")
-    credits_map = {"starter": 10, "pro": 100}
-    credits = credits_map.get(package, 10)
-    if email:
-        add_credits(email, credits)
     return render_template("success.html")
 
 @app.route("/webhook", methods=["POST"])
