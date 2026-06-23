@@ -10,7 +10,7 @@ from google import genai
 from google.genai import types
 import os
 import json
-import stripe
+import requests as http_requests
 from werkzeug.middleware.proxy_fix import ProxyFix
 import psycopg2
 import psycopg2.extras
@@ -31,10 +31,11 @@ load_dotenv()
 
 app = Flask(__name__)
 app.secret_key = os.getenv("SECRET_KEY", secrets.token_hex(32))
-STRIPE_SECRET_KEY    = os.getenv("STRIPE_SECRET_KEY", "")
-STRIPE_PUB_KEY       = os.getenv("STRIPE_PUBLISHABLE_KEY", "")
+PADDLE_API_KEY       = os.getenv("PADDLE_API_KEY", "")
+PADDLE_CLIENT_TOKEN  = os.getenv("PADDLE_CLIENT_TOKEN", "")
+PADDLE_STARTER_PRICE = os.getenv("PADDLE_STARTER_PRICE", "")
+PADDLE_PRO_PRICE     = os.getenv("PADDLE_PRO_PRICE", "")
 BASE_URL             = os.getenv("BASE_URL", "http://localhost:5000")
-stripe.api_key       = STRIPE_SECRET_KEY
 app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
 app.config["SESSION_COOKIE_SECURE"] = os.getenv("RENDER", False)
 app.config["SESSION_COOKIE_HTTPONLY"] = True
@@ -647,67 +648,64 @@ def create_checkout():
     if "user_id" not in session:
         return jsonify({"error": "Not logged in"}), 401
     data = request.get_json()
+    package = data.get("package", "starter")
     packages = {
-        "starter":   {"credits": 30,  "price": 9900,  "name": "Starter — 30 Posts"},
-        "pro":       {"credits": 100, "price": 29900, "name": "Pro — 100 Posts"},
-        "unlimited": {"credits": 500, "price": 99900, "name": "Agency — 500 Posts"},
+        "starter": {"price_id": PADDLE_STARTER_PRICE, "credits": 10},
+        "pro":     {"price_id": PADDLE_PRO_PRICE,     "credits": 100},
     }
-    pkg = packages.get(data.get("package", "starter"), packages["starter"])
+    pkg = packages.get(package, packages["starter"])
     user = get_user_by_id(session["user_id"])
     email = user["email"] if user else ""
     try:
-        checkout = stripe.checkout.Session.create(
-            payment_method_types=["card"],
-            line_items=[{"price_data": {"currency": "aed",
-                         "unit_amount": pkg["price"],
-                         "product_data": {"name": pkg["name"]}},
-                         "quantity": 1}],
-            mode="payment",
-            success_url=f"{BASE_URL}/success?session_id={{CHECKOUT_SESSION_ID}}",
-            cancel_url=f"{BASE_URL}/",
-            customer_email=email,
-            metadata={"user_email": email, "credits": str(pkg["credits"])},
+        response = http_requests.post(
+            "https://api.paddle.com/transactions",
+            headers={
+                "Authorization": f"Bearer {PADDLE_API_KEY}",
+                "Content-Type": "application/json"
+            },
+            json={
+                "items": [{"price_id": pkg["price_id"], "quantity": 1}],
+                "customer": {"email": email},
+                "checkout": {
+                    "url": f"{BASE_URL}/success?package={package}&email={email}"
+                }
+            }
         )
-        return jsonify({"checkout_url": checkout.url})
+        result = response.json()
+        checkout_url = result.get("data", {}).get("checkout", {}).get("url")
+        if not checkout_url:
+            return jsonify({"error": "Could not create checkout"}), 500
+        return jsonify({"checkout_url": checkout_url})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
 @app.route("/success")
 def success():
-    session_id = request.args.get("session_id")
-    if session_id:
-        try:
-            co = stripe.checkout.Session.retrieve(session_id)
-            if co.payment_status == "paid":
-                email   = co.metadata.get("user_email")
-                credits = int(co.metadata.get("credits", 30))
-                add_credits(email, credits)
-        except Exception:
-            pass
+    package = request.args.get("package", "starter")
+    email   = request.args.get("email", "")
+    credits_map = {"starter": 10, "pro": 100}
+    credits = credits_map.get(package, 10)
+    if email:
+        add_credits(email, credits)
     return render_template("success.html")
 
 @app.route("/webhook", methods=["POST"])
 def webhook():
-    payload = request.data
-    sig = request.headers.get("Stripe-Signature", "")
-    webhook_secret = os.getenv("STRIPE_WEBHOOK_SECRET", "")
     try:
-        if webhook_secret:
-            event = stripe.Webhook.construct_event(payload, sig, webhook_secret)
-        else:
-            event = stripe.Event.construct_from(
-                json.loads(payload), stripe.api_key
-            )
-        if event["type"] == "checkout.session.completed":
-            s = event["data"]["object"]
-            if s.get("payment_status") == "paid":
-                email = s.get("metadata", {}).get("user_email")
-                credits = int(s.get("metadata", {}).get("credits", 30))
-                if email:
-                    add_credits(email, credits)
+        data = request.get_json()
+        event_type = data.get("event_type", "")
+        if event_type == "transaction.completed":
+            txn  = data.get("data", {})
+            email = txn.get("customer", {}).get("email", "")
+            items = txn.get("items", [])
+            for item in items:
+                price_id = item.get("price", {}).get("id", "")
+                if price_id == PADDLE_STARTER_PRICE:
+                    add_credits(email, 10)
+                elif price_id == PADDLE_PRO_PRICE:
+                    add_credits(email, 100)
     except Exception as e:
         print(f"Webhook error: {e}")
-        return jsonify({"error": str(e)}), 400
     return jsonify({"status": "ok"})
 
 
