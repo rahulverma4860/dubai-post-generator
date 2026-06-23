@@ -2,8 +2,6 @@ from flask import Flask, render_template, request, jsonify, session, redirect, u
 import sqlite3
 import hashlib
 import secrets
-
-from streamlit import user
 import bcrypt
 import time
 from collections import defaultdict
