@@ -1176,9 +1176,12 @@
       const data = await resp.json();
       if (data.error) { err.textContent = data.error; return; }
       closeModal();
-      showAlert(`Welcome! You have ${data.credits} free generation.`, 'success');
-      updateNav(email, data.credits);
-      if (pendingGenerate) { pendingGenerate = false; generate(); }
+      if (pendingGenerate) {
+        pendingGenerate = false;
+        window.location.reload();
+      } else {
+        window.location.reload();
+      }
     }
     function updateNav(email, credits) {
       const badge = document.getElementById('credits-badge');
