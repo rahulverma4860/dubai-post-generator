@@ -20,9 +20,6 @@ stripe.api_key       = STRIPE_SECRET_KEY
 app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
 app.config["SESSION_COOKIE_SECURE"] = False
 
-# Run on every startup including Gunicorn
-init_db()
-
 # ── Database ───────────────────────────────────────────────────────────────────
 def init_db():
     conn = sqlite3.connect("users.db")
@@ -76,6 +73,10 @@ def save_generation(user_id, prop, output, layout):
     c.execute("INSERT INTO generations (user_id,property,output,layout) VALUES (?,?,?,?)",
               (user_id, json.dumps(prop), json.dumps(output), layout))
     conn.commit(); conn.close()
+
+# Run on every startup including Gunicorn
+init_db()
+
 
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
 client = genai.Client(api_key=GEMINI_API_KEY) if GEMINI_API_KEY else None
