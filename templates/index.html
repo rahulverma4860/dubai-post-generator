@@ -1,0 +1,1221 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title>DubaiPostAI — 7 Days of Content in 30 Seconds</title>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=DM+Sans:wght@300;400;500;600&display=swap"
+    rel="stylesheet">
+  <style>
+    :root {
+      --gold: #C9A84C;
+      --gold-lt: #F5D98B;
+      --navy: #06091a;
+      --navy2: #0d1226;
+      --navy3: #141830;
+      --text: #e8e0d0;
+      --muted: #8a9bb5;
+      --border: rgba(201, 168, 76, 0.18);
+      --green: #2dd4a0;
+      --red: #ff6b6b;
+    }
+
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background: var(--navy);
+      color: var(--text);
+      font-family: "DM Sans", sans-serif;
+      min-height: 100vh;
+    }
+
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+
+    nav {
+      border-bottom: 1px solid var(--border);
+      padding: 16px 0;
+    }
+
+    .nav-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .logo {
+      font-family: "Cormorant Garamond", serif;
+      font-size: 1.4rem;
+      color: var(--gold);
+      font-weight: 600;
+    }
+
+    .hero {
+      text-align: center;
+      padding: 56px 0 40px;
+    }
+
+    .eyebrow {
+      font-size: 11px;
+      letter-spacing: .18em;
+      color: var(--gold);
+      text-transform: uppercase;
+      margin-bottom: 14px;
+    }
+
+    .hero h1 {
+      font-family: "Cormorant Garamond", serif;
+      font-size: clamp(2.2rem, 5vw, 3.4rem);
+      font-weight: 600;
+      line-height: 1.1;
+      margin-bottom: 14px;
+    }
+
+    .hero h1 span {
+      color: var(--gold);
+    }
+
+    .hero p {
+      font-size: 15px;
+      color: var(--muted);
+      max-width: 460px;
+      margin: 0 auto 28px;
+      line-height: 1.6;
+    }
+
+    .stats {
+      display: flex;
+      gap: 32px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .stat-val {
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: var(--gold);
+      font-family: "Cormorant Garamond", serif;
+    }
+
+    .stat-lbl {
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .main-grid {
+      display: grid;
+      grid-template-columns: 380px 1fr;
+      gap: 28px;
+      padding: 0 0 60px;
+    }
+
+    @media(max-width:860px) {
+      .main-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .form-card {
+      background: var(--navy2);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 26px;
+      position: sticky;
+      top: 24px;
+      height: fit-content;
+    }
+
+    .form-title {
+      font-family: "Cormorant Garamond", serif;
+      font-size: 1.3rem;
+      color: var(--gold);
+      margin-bottom: 18px;
+    }
+
+    .field {
+      margin-bottom: 13px;
+    }
+
+    .field label {
+      display: block;
+      font-size: 11px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      margin-bottom: 5px;
+    }
+
+    .field input,
+    .field select,
+    .field textarea {
+      width: 100%;
+      padding: 10px 13px;
+      background: var(--navy3);
+      border: 1px solid var(--border);
+      color: var(--text);
+      border-radius: 8px;
+      font-family: "DM Sans", sans-serif;
+      font-size: 13px;
+      transition: border-color .2s;
+    }
+
+    .field input:focus,
+    .field select:focus,
+    .field textarea:focus {
+      outline: none;
+      border-color: var(--gold);
+    }
+
+    .field input::placeholder,
+    .field textarea::placeholder {
+      color: var(--muted);
+    }
+
+    .field textarea {
+      resize: vertical;
+      min-height: 70px;
+    }
+
+    .field-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .gen-btn {
+      width: 100%;
+      padding: 13px;
+      background: var(--gold);
+      color: var(--navy);
+      border: none;
+      border-radius: 10px;
+      font-family: "DM Sans", sans-serif;
+      font-size: 14px;
+      font-weight: 800;
+      cursor: pointer;
+      transition: all .2s;
+      margin-top: 4px;
+    }
+
+    .gen-btn:hover {
+      background: var(--gold-lt);
+    }
+
+    .gen-btn:disabled {
+      opacity: .5;
+      cursor: not-allowed;
+    }
+
+    .free-note {
+      text-align: center;
+      font-size: 11px;
+      color: var(--muted);
+      margin-top: 8px;
+    }
+
+    .output-area {
+      min-height: 400px;
+    }
+
+    .output-placeholder {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 400px;
+      text-align: center;
+      color: var(--muted);
+      border: 1px dashed var(--border);
+      border-radius: 16px;
+      padding: 40px;
+    }
+
+    .placeholder-icon {
+      font-size: 44px;
+      margin-bottom: 14px;
+      opacity: .4;
+    }
+
+    .loading {
+      display: none;
+      text-align: center;
+      padding: 60px 20px;
+    }
+
+    .spinner {
+      width: 40px;
+      height: 40px;
+      border: 3px solid var(--border);
+      border-top-color: var(--gold);
+      border-radius: 50%;
+      animation: spin .8s linear infinite;
+      margin: 0 auto 14px;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    .alert {
+      padding: 11px 15px;
+      border-radius: 8px;
+      font-size: 13px;
+      margin-bottom: 12px;
+    }
+
+    .alert-error {
+      background: rgba(255, 107, 107, .1);
+      border: 1px solid rgba(255, 107, 107, .3);
+      color: var(--red);
+    }
+
+    .alert-success {
+      background: rgba(45, 212, 160, .1);
+      border: 1px solid rgba(45, 212, 160, .3);
+      color: var(--green);
+    }
+
+    .output-content {
+      display: none;
+    }
+
+    /* Tabs */
+    .tabs {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 18px;
+      flex-wrap: wrap;
+    }
+
+    .tab {
+      padding: 7px 15px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      border: 1px solid var(--border);
+      background: var(--navy3);
+      color: var(--muted);
+      transition: all .2s;
+    }
+
+    .tab.active {
+      background: rgba(201, 168, 76, 0.12);
+      border-color: var(--gold);
+      color: var(--gold);
+    }
+
+    .layout-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11px;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-weight: 600;
+      margin-bottom: 14px;
+    }
+
+    /* Post cards */
+    .post-card {
+      border-radius: 14px;
+      padding: 20px;
+      margin-bottom: 14px;
+      transition: transform .2s;
+    }
+
+    .post-card:hover {
+      transform: translateY(-2px);
+    }
+
+    .post-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 8px;
+    }
+
+    .post-day {
+      font-size: 10px;
+      letter-spacing: .2em;
+      text-transform: uppercase;
+    }
+
+    .post-angle {
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    .post-time {
+      font-size: 11px;
+      padding: 3px 10px;
+      border-radius: 20px;
+      background: var(--navy3);
+      color: var(--muted);
+    }
+
+    .post-hook {
+      font-size: 2.2rem;
+      margin: 6px 0;
+    }
+
+    .post-caption {
+      font-size: 13px;
+      line-height: 1.7;
+      white-space: pre-line;
+      margin-bottom: 10px;
+    }
+
+    .post-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+      margin-bottom: 10px;
+    }
+
+    .hashtag {
+      font-size: 11px;
+      padding: 3px 10px;
+      border-radius: 20px;
+    }
+
+    .post-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .post-note {
+      font-size: 11px;
+      color: var(--muted);
+      font-style: italic;
+    }
+
+    .copy-btn {
+      font-size: 12px;
+      padding: 6px 14px;
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all .2s;
+    }
+
+    .copy-btn:hover {
+      border-color: var(--gold);
+      color: var(--gold);
+    }
+
+    .copy-btn.copied {
+      border-color: var(--green);
+      color: var(--green);
+    }
+
+    /* 8 Layout styles */
+    .lx-luxury-dark {
+      background: #080810;
+      border: 1px solid rgba(201, 168, 76, 0.4);
+    }
+
+    .lx-luxury-dark .post-day {
+      color: var(--gold);
+    }
+
+    .lx-luxury-dark .post-caption {
+      font-family: "Cormorant Garamond", serif;
+      font-size: 15px;
+      line-height: 1.8;
+      color: #e0d8c8;
+    }
+
+    .lx-luxury-dark .hashtag {
+      background: rgba(201, 168, 76, 0.08);
+      color: var(--gold);
+      border: 1px solid rgba(201, 168, 76, 0.2);
+    }
+
+    .lx-clean-white {
+      background: #f8f7f4;
+      border: none;
+    }
+
+    .lx-clean-white .post-day {
+      color: #e8593c;
+      font-weight: 700;
+    }
+
+    .lx-clean-white .post-caption {
+      color: #2a2a2a;
+    }
+
+    .lx-clean-white .post-angle {
+      color: #888;
+    }
+
+    .lx-clean-white .post-time {
+      background: #f0ede8;
+      color: #888;
+    }
+
+    .lx-clean-white .hashtag {
+      background: #fff0ed;
+      color: #e8593c;
+      border: 1px solid #ffd4cc;
+    }
+
+    .lx-clean-white .copy-btn {
+      border-color: #ddd;
+      color: #666;
+    }
+
+    .lx-clean-white .copy-btn:hover {
+      border-color: #e8593c;
+      color: #e8593c;
+    }
+
+    .lx-bold-block {
+      background: linear-gradient(135deg, #1a0533, #0d1226);
+      border: 2px solid #8b2fc9;
+    }
+
+    .lx-bold-block .post-day {
+      color: #bf7fff;
+    }
+
+    .lx-bold-block .post-caption {
+      color: #f0e8ff;
+      font-weight: 500;
+    }
+
+    .lx-bold-block .post-time {
+      background: rgba(139, 47, 201, 0.2);
+      color: #bf7fff;
+    }
+
+    .lx-bold-block .hashtag {
+      background: rgba(139, 47, 201, 0.15);
+      color: #bf7fff;
+      border: 1px solid rgba(139, 47, 201, 0.3);
+    }
+
+    .lx-magazine {
+      background: var(--navy2);
+      border: 1px solid var(--border);
+      border-top: 4px solid var(--gold);
+    }
+
+    .lx-magazine .post-caption {
+      font-family: "Cormorant Garamond", serif;
+      font-size: 15px;
+      line-height: 1.9;
+      font-style: italic;
+    }
+
+    .lx-magazine .hashtag {
+      background: transparent;
+      color: var(--muted);
+      border: none;
+    }
+
+    .lx-stats-heavy {
+      background: var(--navy3);
+      border: 1px solid rgba(45, 212, 160, 0.3);
+    }
+
+    .lx-stats-heavy .post-day {
+      color: var(--green);
+    }
+
+    .lx-stats-heavy .post-caption {
+      font-family: monospace;
+    }
+
+    .lx-stats-heavy .post-time {
+      background: rgba(45, 212, 160, 0.1);
+      color: var(--green);
+    }
+
+    .lx-stats-heavy .hashtag {
+      background: rgba(45, 212, 160, 0.08);
+      color: var(--green);
+      border: 1px solid rgba(45, 212, 160, 0.2);
+    }
+
+    .lx-neighbourhood {
+      background: linear-gradient(135deg, #0d1f1a, #0a1a24);
+      border: 1px solid rgba(45, 160, 100, 0.3);
+    }
+
+    .lx-neighbourhood .post-day {
+      color: #5ecfa0;
+    }
+
+    .lx-neighbourhood .post-caption {
+      color: #d0e8dc;
+    }
+
+    .lx-neighbourhood .hashtag {
+      background: rgba(45, 160, 100, 0.1);
+      color: #5ecfa0;
+      border: 1px solid rgba(45, 160, 100, 0.25);
+    }
+
+    .lx-urgent {
+      background: linear-gradient(135deg, #1a0808, #200d0d);
+      border: 2px solid rgba(255, 80, 80, 0.5);
+    }
+
+    .lx-urgent .post-day {
+      color: #ff6060;
+    }
+
+    .lx-urgent .post-caption {
+      color: #ffe8e8;
+      font-weight: 600;
+    }
+
+    .lx-urgent .post-time {
+      background: rgba(255, 80, 80, 0.15);
+      color: #ff8080;
+    }
+
+    .lx-urgent .hashtag {
+      background: rgba(255, 80, 80, 0.1);
+      color: #ff8080;
+      border: 1px solid rgba(255, 80, 80, 0.25);
+    }
+
+    .lx-bilingual {
+      background: linear-gradient(135deg, #0a0f1e, #141028);
+      border: 1px solid rgba(201, 168, 76, 0.35);
+    }
+
+    .lx-bilingual .post-day {
+      color: var(--gold);
+    }
+
+    .lx-bilingual .arabic-note {
+      font-size: 13px;
+      color: rgba(201, 168, 76, 0.7);
+      direction: rtl;
+      text-align: right;
+      margin-top: 10px;
+      padding-top: 10px;
+      border-top: 1px solid var(--border);
+    }
+
+    .lx-bilingual .hashtag {
+      background: rgba(201, 168, 76, 0.08);
+      color: var(--gold);
+      border: 1px solid rgba(201, 168, 76, 0.2);
+    }
+
+    /* Content cards */
+    .content-card {
+      background: var(--navy2);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 18px;
+      margin-bottom: 14px;
+    }
+
+    .content-label {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--gold);
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      margin-bottom: 10px;
+    }
+
+    .content-text {
+      font-size: 13px;
+      line-height: 1.7;
+      color: var(--text);
+      white-space: pre-line;
+    }
+
+    .story-card {
+      background: var(--navy3);
+      border-radius: 8px;
+      padding: 10px 14px;
+      margin-bottom: 8px;
+    }
+
+    .story-day {
+      font-size: 11px;
+      color: var(--gold);
+      margin-bottom: 3px;
+    }
+
+    footer {
+      text-align: center;
+      padding: 28px 0;
+      border-top: 1px solid var(--border);
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    footer a {
+      color: var(--gold);
+      text-decoration: none;
+    }
+
+    /* Auth modal */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, .8);
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .2s;
+    }
+
+    .modal-overlay.open {
+      opacity: 1;
+      pointer-events: all;
+    }
+
+    .modal {
+      background: #0d1226;
+      border: 1px solid rgba(201, 168, 76, 0.18);
+      border-radius: 16px;
+      padding: 32px;
+      width: 100%;
+      max-width: 400px;
+      margin: 16px;
+      position: relative;
+    }
+
+    .modal-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.6rem;
+      color: #C9A84C;
+      margin-bottom: 6px;
+    }
+
+    .modal-sub {
+      font-size: 13px;
+      color: #8a9bb5;
+      margin-bottom: 20px;
+    }
+
+    .modal-tabs {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+
+    .modal-tab {
+      flex: 1;
+      padding: 8px;
+      text-align: center;
+      border-radius: 8px;
+      border: 1px solid rgba(201, 168, 76, 0.18);
+      background: #141830;
+      color: #8a9bb5;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 500;
+    }
+
+    .modal-tab.active {
+      background: rgba(201, 168, 76, 0.12);
+      border-color: #C9A84C;
+      color: #C9A84C;
+    }
+
+    .modal-field {
+      margin-bottom: 11px;
+    }
+
+    .modal-field input {
+      width: 100%;
+      padding: 12px 14px;
+      background: #141830;
+      border: 1px solid rgba(201, 168, 76, 0.18);
+      color: #e8e0d0;
+      border-radius: 8px;
+      font-size: 13px;
+      font-family: 'DM Sans', sans-serif;
+    }
+
+    .modal-field input:focus {
+      outline: none;
+      border-color: #C9A84C;
+    }
+
+    .modal-submit {
+      width: 100%;
+      padding: 12px;
+      background: #C9A84C;
+      color: #06091a;
+      border: none;
+      border-radius: 8px;
+      font-weight: 800;
+      font-size: 14px;
+      cursor: pointer;
+      font-family: 'DM Sans', sans-serif;
+    }
+
+    .modal-submit:hover {
+      background: #F5D98B;
+    }
+
+    .modal-error {
+      color: #ff6b6b;
+      font-size: 12px;
+      margin-top: 8px;
+      text-align: center;
+    }
+
+    .modal-close {
+      position: absolute;
+      top: 14px;
+      right: 18px;
+      background: none;
+      border: none;
+      color: #8a9bb5;
+      font-size: 20px;
+      cursor: pointer;
+    }
+
+    .credits-badge {
+      background: rgba(201, 168, 76, 0.12);
+      border: 1px solid rgba(201, 168, 76, 0.18);
+      color: #C9A84C;
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+  </style>
+</head>
+
+<body>
+
+  <nav>
+    <div class="container">
+      <div class="nav-inner">
+        <div class="logo">🏙️ DubaiPostAI</div>
+        {% if user %}
+        <div style="display:flex;align-items:center;gap:12px">
+          <span class="credits-badge" id="credits-badge">⚡ {{ user.credits }} credits</span>
+          <span style="font-size:13px;color:#8a9bb5">{{ user.email }}</span>
+          <a href="/logout"
+            style="font-size:13px;color:#8a9bb5;text-decoration:none;border:1px solid rgba(201,168,76,0.18);padding:6px 14px;border-radius:8px;">Log
+            out</a>
+        </div>
+        {% else %}
+        <div style="display:flex;align-items:center;gap:12px">
+          <button onclick="openModal('login')"
+            style="padding:6px 16px;background:transparent;border:1px solid rgba(201,168,76,0.18);color:#e8e0d0;border-radius:8px;cursor:pointer;font-size:13px;">Log
+            in</button>
+          <button onclick="openModal('signup')"
+            style="padding:6px 16px;background:#C9A84C;border:none;color:#06091a;border-radius:8px;cursor:pointer;font-size:13px;font-weight:700;">Sign
+            up free</button>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </nav>
+
+  <div class="container">
+    <div class="hero">
+      <p class="eyebrow">For Dubai Real Estate Agents</p>
+      <h1>7 Days of <span>Instagram Content</span><br>in 30 Seconds</h1>
+      <p>Feed it a property. Get captions, hashtags, stories, WhatsApp and LinkedIn in 8 unique styles.</p>
+      <div class="stats">
+        <div>
+          <div class="stat-val">7</div>
+          <div class="stat-lbl">Instagram posts</div>
+        </div>
+        <div>
+          <div class="stat-val">8</div>
+          <div class="stat-lbl">Layout styles</div>
+        </div>
+        <div>
+          <div class="stat-val">4</div>
+          <div class="stat-lbl">Content types</div>
+        </div>
+        <div>
+          <div class="stat-val">30s</div>
+          <div class="stat-lbl">Generation time</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="main-grid">
+      <div class="form-card">
+        <p class="form-title">Generate Your Content</p>
+        <div id="alert-box"></div>
+        <div class="field"><label>Your Name</label><input type="text" id="agent-name" placeholder="e.g. Rahul Verma">
+        </div>
+        <div class="field"><label>Community / Area</label><input type="text" id="community"
+            placeholder="e.g. Dubai Marina"></div>
+        <div class="field"><label>Listing Type</label>
+          <select id="listing-type">
+            <option value="for-sale">For Sale</option>
+            <option value="for-rent">For Rent</option>
+          </select>
+        </div>
+        <div class="field-row">
+          <div class="field"><label>Property Type</label>
+            <select id="property-type">
+              <option>Apartment</option>
+              <option>Villa</option>
+              <option>Townhouse</option>
+              <option>Penthouse</option>
+            </select>
+          </div>
+          <div class="field"><label>Bedrooms</label>
+            <select id="beds">
+              <option selected>Studio</option>
+              <option>1</option>
+              <option>2</option>
+              <option>3</option>
+              <option>4</option>
+              <option>5+</option>
+            </select>
+          </div>
+        </div>
+        <div class="field-row">
+          <div class="field"><label>Size (sqft)</label><input type="text" id="size" placeholder="e.g. 1,200"></div>
+          <div class="field"><label>Price (AED)</label><input type="text" id="price" placeholder="e.g. 2,200,000"></div>
+        </div>
+        <div class="field"><label>Key Features</label><textarea id="features"
+            placeholder="Sea view, private pool, smart home..."></textarea></div>
+        <div class="field-row">
+          <div class="field"><label>Target Audience</label>
+            <select id="audience">
+              <option>Investors</option>
+              <option>Families</option>
+              <option>Young Professionals</option>
+              <option>Luxury Buyers</option>
+              <option>Expats</option>
+              <option>Arab Investors</option>
+            </select>
+          </div>
+          <div class="field"><label>Tone</label>
+            <select id="tone">
+              <option>Professional</option>
+              <option>Conversational</option>
+              <option>Luxury</option>
+              <option>Urgent</option>
+            </select>
+          </div>
+        </div>
+        <button class="gen-btn" onclick="generate()" id="gen-btn">Generate 7-Day Content Plan</button>
+        <p class="free-note">1 free generation on sign up &middot; AED 99 for 30 posts</p>
+      </div>
+
+      <div class="output-area">
+        <div class="output-placeholder" id="placeholder">
+          <div class="placeholder-icon">&#9999;&#65039;</div>
+          <p style="font-size:15px;font-weight:500;margin-bottom:6px">Your content will appear here</p>
+          <p style="font-size:13px">Fill in the property details and click Generate</p>
+        </div>
+        <div class="loading" id="loading">
+          <div class="spinner"></div>
+          <p style="color:var(--muted);font-size:14px">Generating your 7-day content plan...</p>
+        </div>
+        <div class="output-content" id="output-content"></div>
+      </div>
+    </div>
+  </div>
+  <!-- Pricing -->
+  <div class="container" style="padding-bottom:60px;">
+    <div style="text-align:center;padding:48px 0 36px;border-top:1px solid rgba(201,168,76,0.18);">
+      <h2 style="font-family:'Cormorant Garamond',serif;font-size:2.2rem;margin-bottom:8px;">Simple Pricing</h2>
+      <p style="color:#8a9bb5;font-size:14px;">Pay once, use anytime. No subscriptions.</p>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:20px;max-width:800px;margin:0 auto;">
+      <div
+        style="background:#0d1226;border:1px solid rgba(201,168,76,0.18);border-radius:16px;padding:28px;text-align:center;">
+        <p style="font-size:1rem;font-weight:600;margin-bottom:6px;">Starter</p>
+        <p
+          style="font-family:'Cormorant Garamond',serif;font-size:2.4rem;font-weight:700;color:#C9A84C;margin-bottom:2px;">
+          AED 99</p>
+        <p style="font-size:12px;color:#8a9bb5;margin-bottom:16px;">one-time</p>
+        <ul style="list-style:none;margin-bottom:22px;text-align:left;">
+          <li style="font-size:13px;color:#8a9bb5;padding:5px 0;border-bottom:1px solid rgba(255,255,255,0.04);">✓ 30
+            post generations</li>
+          <li style="font-size:13px;color:#8a9bb5;padding:5px 0;border-bottom:1px solid rgba(255,255,255,0.04);">✓ All 8
+            layout styles</li>
+          <li style="font-size:13px;color:#8a9bb5;padding:5px 0;">✓ All 4 content types</li>
+        </ul>
+        <button onclick="buyPackage('starter')"
+          style="width:100%;padding:11px;background:transparent;border:1px solid rgba(201,168,76,0.18);color:#e8e0d0;border-radius:8px;font-weight:700;font-size:13px;cursor:pointer;">Get
+          Started</button>
+      </div>
+      <div style="background:#0d1226;border:1px solid #C9A84C;border-radius:16px;padding:28px;text-align:center;">
+        <p
+          style="font-size:11px;font-weight:700;color:#06091a;background:#C9A84C;padding:4px 12px;border-radius:20px;display:inline-block;margin-bottom:12px;">
+          MOST POPULAR</p>
+        <p style="font-size:1rem;font-weight:600;margin-bottom:6px;">Pro</p>
+        <p
+          style="font-family:'Cormorant Garamond',serif;font-size:2.4rem;font-weight:700;color:#C9A84C;margin-bottom:2px;">
+          AED 299</p>
+        <p style="font-size:12px;color:#8a9bb5;margin-bottom:16px;">one-time</p>
+        <ul style="list-style:none;margin-bottom:22px;text-align:left;">
+          <li style="font-size:13px;color:#8a9bb5;padding:5px 0;border-bottom:1px solid rgba(255,255,255,0.04);">✓ 100
+            post generations</li>
+          <li style="font-size:13px;color:#8a9bb5;padding:5px 0;border-bottom:1px solid rgba(255,255,255,0.04);">✓ All 8
+            layout styles</li>
+          <li style="font-size:13px;color:#8a9bb5;padding:5px 0;">✓ History saved</li>
+        </ul>
+        <button onclick="buyPackage('pro')"
+          style="width:100%;padding:11px;background:#C9A84C;border:none;color:#06091a;border-radius:8px;font-weight:700;font-size:13px;cursor:pointer;">Get
+          Pro</button>
+      </div>
+      <div
+        style="background:#0d1226;border:1px solid rgba(201,168,76,0.18);border-radius:16px;padding:28px;text-align:center;">
+        <p style="font-size:1rem;font-weight:600;margin-bottom:6px;">Agency</p>
+        <p
+          style="font-family:'Cormorant Garamond',serif;font-size:2.4rem;font-weight:700;color:#C9A84C;margin-bottom:2px;">
+          AED 999</p>
+        <p style="font-size:12px;color:#8a9bb5;margin-bottom:16px;">one-time</p>
+        <ul style="list-style:none;margin-bottom:22px;text-align:left;">
+          <li style="font-size:13px;color:#8a9bb5;padding:5px 0;border-bottom:1px solid rgba(255,255,255,0.04);">✓ 500
+            post generations</li>
+          <li style="font-size:13px;color:#8a9bb5;padding:5px 0;border-bottom:1px solid rgba(255,255,255,0.04);">✓ All 8
+            layout styles</li>
+          <li style="font-size:13px;color:#8a9bb5;padding:5px 0;">✓ Team use, never expires</li>
+        </ul>
+        <button onclick="buyPackage('unlimited')"
+          style="width:100%;padding:11px;background:transparent;border:1px solid rgba(201,168,76,0.18);color:#e8e0d0;border-radius:8px;font-weight:700;font-size:13px;cursor:pointer;">Get
+          Agency</button>
+      </div>
+    </div>
+  </div>
+  <footer>
+    Built by <a href="https://www.linkedin.com/in/rahul-verma-b9174389/" target="_blank">Rahul Verma</a>
+    &middot; Dubai Real Estate Agent &amp; Python Developer &middot; 2026
+  </footer>
+
+  <script>
+    const LAYOUT_META = {
+      "luxury-dark": { label: "Luxury Dark", color: "#C9A84C", bg: "rgba(201,168,76,0.1)" },
+      "clean-white": { label: "Clean White", color: "#e8593c", bg: "rgba(232,89,60,0.1)" },
+      "bold-block": { label: "Bold Block", color: "#bf7fff", bg: "rgba(139,47,201,0.1)" },
+      "magazine": { label: "Magazine", color: "#C9A84C", bg: "rgba(201,168,76,0.08)" },
+      "stats-heavy": { label: "Stats Focus", color: "#2dd4a0", bg: "rgba(45,212,160,0.1)" },
+      "neighbourhood": { label: "Neighbourhood", color: "#5ecfa0", bg: "rgba(45,160,100,0.1)" },
+      "urgent": { label: "Urgent", color: "#ff6060", bg: "rgba(255,80,80,0.1)" },
+      "bilingual": { label: "Bilingual", color: "#C9A84C", bg: "rgba(201,168,76,0.1)" }
+    };
+
+    async function generate() {
+      const name = document.getElementById("agent-name").value.trim();
+      const community = document.getElementById("community").value.trim();
+      if (!name || !community) { showAlert("Please fill in your name and community.", "error"); return; }
+
+      document.getElementById("placeholder").style.display = "none";
+      document.getElementById("loading").style.display = "block";
+      document.getElementById("output-content").style.display = "none";
+      document.getElementById("gen-btn").disabled = true;
+
+      const payload = {
+        agent_name: name,
+        community: community,
+        listing_type: document.getElementById("listing-type").value,
+        property_type: document.getElementById("property-type").value,
+        beds: document.getElementById("beds").value,
+        size: document.getElementById("size").value || "1000",
+        price: document.getElementById("price").value.replace(/,/g, "") || "1500000",
+        features: document.getElementById("features").value,
+        audience: document.getElementById("audience").value,
+        tone: document.getElementById("tone").value,
+      };
+
+      try {
+        const resp = await fetch("/generate", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
+        const data = await resp.json();
+        document.getElementById("loading").style.display = "none";
+        document.getElementById("gen-btn").disabled = false;
+        if (data.auth_required) {
+          document.getElementById("placeholder").style.display = "flex";
+          document.getElementById("loading").style.display = "none";
+          document.getElementById("gen-btn").disabled = false;
+          pendingGenerate = true;
+          openModal("signup");
+          return;
+        }
+        if (data.no_credits) {
+          document.getElementById("placeholder").style.display = "flex";
+          showAlert("No credits remaining. Purchase more below.", "error");
+          return;
+        }
+        if (data.error) { document.getElementById("placeholder").style.display = "flex"; showAlert(data.error, "error"); return; }
+        renderOutput(data.output, data.layout);
+      } catch (e) {
+        document.getElementById("loading").style.display = "none";
+        document.getElementById("placeholder").style.display = "flex";
+        document.getElementById("gen-btn").disabled = false;
+        showAlert("Something went wrong. Please try again.", "error");
+      }
+
+    }
+
+    function renderOutput(out, layout) {
+      const lm = LAYOUT_META[layout] || LAYOUT_META["clean-white"];
+      const lx = "lx-" + layout;
+
+      const postsHTML = out.posts.map(p => `
+    <div class="post-card ${lx}">
+      <div class="post-header">
+        <div><span class="post-day">Day ${p.day}</span><span class="post-angle"> &middot; ${p.angle}</span></div>
+        <span class="post-time">&#128336; ${p.best_time}</span>
+      </div>
+      <div class="post-hook">${p.emoji_hook}</div>
+      <div class="post-caption">${esc(p.caption)}</div>
+      ${layout === "bilingual" ? '<div class="arabic-note">For Arabic version — use Google Translate</div>' : ""}
+      <div class="post-tags">${p.hashtags.map(h => `<span class="hashtag">#${h}</span>`).join("")}</div>
+      <div class="post-footer">
+        <span class="post-note">&#128161; ${esc(p.layout_note || "")}</span>
+        <button class="copy-btn" onclick="copyText(this, '${btoa(encodeURIComponent(p.caption + "\n\n" + p.hashtags.map(h => "#" + h).join(" ")))}')">Copy</button>
+      </div>
+    </div>`).join("");
+
+      const storiesHTML = out.stories.map(s =>
+        `<div class="story-card"><div class="story-day">Day ${s.day}</div><div style="font-size:13px;color:var(--text)">${esc(s.idea)}</div></div>`
+      ).join("");
+
+      const el = document.getElementById("output-content");
+      el.style.display = "block";
+      el.innerHTML = `
+    <span class="layout-badge" style="background:${lm.bg};color:${lm.color};border:1px solid ${lm.color}44">${lm.label} Layout</span>
+    <div class="tabs">
+      <div class="tab active" onclick="switchTab('posts',this)">Posts</div>
+      <div class="tab" onclick="switchTab('stories',this)">Stories</div>
+      <div class="tab" onclick="switchTab('whatsapp',this)">WhatsApp</div>
+      <div class="tab" onclick="switchTab('linkedin',this)">LinkedIn</div>
+    </div>
+    <div id="tab-posts">${postsHTML}</div>
+    <div id="tab-stories" style="display:none"><div class="content-card"><p class="content-label">Story Ideas</p>${storiesHTML}</div></div>
+    <div id="tab-whatsapp" style="display:none"><div class="content-card"><p class="content-label">WhatsApp Broadcast</p><div class="content-text">${esc(out.whatsapp)}</div><br><button class="copy-btn" onclick="copyText(this,'${btoa(encodeURIComponent(out.whatsapp))}')">Copy</button></div></div>
+    <div id="tab-linkedin" style="display:none"><div class="content-card"><p class="content-label">LinkedIn Post</p><div class="content-text">${esc(out.linkedin)}</div><br><button class="copy-btn" onclick="copyText(this,'${btoa(encodeURIComponent(out.linkedin))}')">Copy</button></div></div>`;
+    }
+
+    function switchTab(name, el) {
+      ["posts", "stories", "whatsapp", "linkedin"].forEach(t =>
+        document.getElementById("tab-" + t).style.display = t === name ? "block" : "none");
+      document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
+      if (el) el.classList.add("active");
+    }
+
+    function copyText(btn, encoded) {
+      navigator.clipboard.writeText(decodeURIComponent(atob(encoded))).then(() => {
+        btn.textContent = "Copied!"; btn.classList.add("copied");
+        setTimeout(() => { btn.textContent = "Copy"; btn.classList.remove("copied"); }, 2000);
+      });
+    }
+
+    function showAlert(msg, type) {
+      const el = document.getElementById("alert-box");
+      el.innerHTML = `<div class="alert alert-${type}">${msg}</div>`;
+      setTimeout(() => el.innerHTML = "", 4000);
+    }
+
+    function esc(s) {
+      return String(s || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+    }
+
+    document.getElementById("price").addEventListener("blur", function () {
+      const v = parseInt(this.value.replace(/\D/g, ""));
+      if (v) this.value = v.toLocaleString();
+    });
+    let currentAuthTab = 'signup';
+    let pendingGenerate = false;
+
+    function openModal(tab = 'signup') {
+      switchModalTab(tab);
+      document.getElementById('modal-overlay').classList.add('open');
+      document.getElementById('modal-email').focus();
+    }
+    function closeModal(e) {
+      if (!e || e.target === document.getElementById('modal-overlay')) {
+        document.getElementById('modal-overlay').classList.remove('open');
+        pendingGenerate = false;
+      }
+    }
+    function switchModalTab(tab) {
+      currentAuthTab = tab;
+      document.getElementById('tab-signup').classList.toggle('active', tab === 'signup');
+      document.getElementById('tab-login').classList.toggle('active', tab === 'login');
+      document.getElementById('modal-submit').textContent = tab === 'signup' ? 'Create free account' : 'Log in';
+      document.getElementById('modal-error').textContent = '';
+    }
+    async function submitAuth() {
+      const email = document.getElementById('modal-email').value.trim();
+      const pwd = document.getElementById('modal-password').value;
+      const err = document.getElementById('modal-error');
+      if (!email || !pwd) { err.textContent = 'Please fill in both fields.'; return; }
+      const resp = await fetch('/' + currentAuthTab, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password: pwd })
+      });
+      const data = await resp.json();
+      if (data.error) { err.textContent = data.error; return; }
+      closeModal();
+      showAlert(`Welcome! You have ${data.credits} free generation.`, 'success');
+      updateNav(email, data.credits);
+      if (pendingGenerate) { pendingGenerate = false; generate(); }
+    }
+    function updateNav(email, credits) {
+      const badge = document.getElementById('credits-badge');
+      if (badge) badge.textContent = '⚡ ' + credits + ' credits';
+    }
+    async function buyPackage(pkg) {
+      const resp = await fetch('/create-checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ package: pkg })
+      });
+      const data = await resp.json();
+      if (data.error === 'Not logged in') {
+        openModal('login');
+        return;
+      }
+      if (data.checkout_url) {
+        window.location.href = data.checkout_url;
+      }
+    }
+  </script>
+  <!-- Auth Modal -->
+  <div class="modal-overlay" id="modal-overlay" onclick="closeModal(event)">
+    <div class="modal">
+      <button class="modal-close" onclick="closeModal()">✕</button>
+      <p class="modal-title">Welcome to DubaiPostAI</p>
+      <p class="modal-sub">Get 1 free generation on sign up</p>
+      <div class="modal-tabs">
+        <div class="modal-tab active" id="tab-signup" onclick="switchModalTab('signup')">Sign up</div>
+        <div class="modal-tab" id="tab-login" onclick="switchModalTab('login')">Log in</div>
+      </div>
+      <div class="modal-error" id="modal-error"></div>
+      <div class="modal-field"><input type="email" id="modal-email" placeholder="Email address"></div>
+      <div class="modal-field"><input type="password" id="modal-password" placeholder="Password (min 6 chars)"></div>
+      <button class="modal-submit" id="modal-submit" onclick="submitAuth()">Create free account</button>
+    </div>
+  </div>
+</body>
+
+</html>
