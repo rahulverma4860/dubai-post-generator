@@ -19,6 +19,10 @@ BASE_URL             = os.getenv("BASE_URL", "http://localhost:5000")
 stripe.api_key       = STRIPE_SECRET_KEY
 app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
 app.config["SESSION_COOKIE_SECURE"] = False
+
+# Run on every startup including Gunicorn
+init_db()
+
 # ── Database ───────────────────────────────────────────────────────────────────
 def init_db():
     conn = sqlite3.connect("users.db")
