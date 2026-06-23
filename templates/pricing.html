@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <title>Pricing — DubaiPostAI</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=DM+Sans:wght@300;400;500;600&display=swap"
+        rel="stylesheet">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background: #06091a;
+            color: #e8e0d0;
+            font-family: 'DM Sans', sans-serif;
+            line-height: 1.7;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 48px 24px;
+        }
+
+        .back {
+            display: inline-block;
+            margin-bottom: 32px;
+            color: #8a9bb5;
+            text-decoration: none;
+            font-size: 13px;
+        }
+
+        .back:hover {
+            color: #C9A84C;
+        }
+
+        h1 {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 2.4rem;
+            color: #C9A84C;
+            text-align: center;
+            margin-bottom: 8px;
+        }
+
+        .sub {
+            text-align: center;
+            color: #8a9bb5;
+            font-size: 14px;
+            margin-bottom: 40px;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            max-width: 800px;
+            margin: 0 auto 40px;
+        }
+
+        @media(max-width:700px) {
+            .grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .card {
+            background: #0d1226;
+            border: 1px solid rgba(201, 168, 76, 0.18);
+            border-radius: 16px;
+            padding: 28px;
+            text-align: center;
+        }
+
+        .card.featured {
+            border-color: #C9A84C;
+        }
+
+        .badge {
+            font-size: 11px;
+            font-weight: 700;
+            color: #06091a;
+            background: #C9A84C;
+            padding: 4px 12px;
+            border-radius: 20px;
+            display: inline-block;
+            margin-bottom: 12px;
+        }
+
+        .name {
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 6px;
+        }
+
+        .price {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 2.4rem;
+            font-weight: 700;
+            color: #C9A84C;
+            margin-bottom: 2px;
+        }
+
+        .period {
+            font-size: 12px;
+            color: #8a9bb5;
+            margin-bottom: 16px;
+        }
+
+        ul {
+            list-style: none;
+            margin-bottom: 22px;
+            text-align: left;
+        }
+
+        ul li {
+            font-size: 13px;
+            color: #8a9bb5;
+            padding: 5px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+        }
+
+        ul li::before {
+            content: "✓ ";
+            color: #2dd4a0;
+        }
+
+        .btn {
+            display: block;
+            width: 100%;
+            padding: 12px;
+            border-radius: 8px;
+            font-weight: 700;
+            font-size: 13px;
+            text-decoration: none;
+            text-align: center;
+            transition: all .2s;
+        }
+
+        .btn-gold {
+            background: #C9A84C;
+            color: #06091a;
+        }
+
+        .btn-gold:hover {
+            background: #F5D98B;
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 1px solid rgba(201, 168, 76, 0.18);
+            color: #e8e0d0;
+        }
+
+        .btn-outline:hover {
+            border-color: #C9A84C;
+            color: #C9A84C;
+        }
+
+        .note {
+            text-align: center;
+            font-size: 13px;
+            color: #8a9bb5;
+            margin-top: 16px;
+        }
+
+        .faq {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .faq h2 {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.6rem;
+            color: #C9A84C;
+            text-align: center;
+            margin-bottom: 24px;
+        }
+
+        .faq-item {
+            border-bottom: 1px solid rgba(201, 168, 76, 0.12);
+            padding: 16px 0;
+        }
+
+        .faq-q {
+            font-size: 14px;
+            font-weight: 600;
+            color: #e8e0d0;
+            margin-bottom: 6px;
+        }
+
+        .faq-a {
+            font-size: 13px;
+            color: #8a9bb5;
+        }
+
+        footer {
+            text-align: center;
+            padding: 32px 0;
+            border-top: 1px solid rgba(201, 168, 76, 0.12);
+            margin-top: 48px;
+            font-size: 12px;
+            color: #4a6080;
+        }
+
+        footer a {
+            color: #C9A84C;
+            text-decoration: none;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <a href="/" class="back">← Back to DubaiPostAI</a>
+        <h1>Simple Pricing</h1>
+        <p class="sub">Pay once, use anytime. No subscriptions. No hidden fees.</p>
+
+        <div class="grid">
+            <div class="card">
+                <p class="name">Starter</p>
+                <p class="price">AED 99</p>
+                <p class="period">one-time payment</p>
+                <ul>
+                    <li>30 post generations</li>
+                    <li>All 8 layout styles</li>
+                    <li>7 Instagram captions</li>
+                    <li>Stories, WhatsApp & LinkedIn</li>
+                    <li>For Sale & For Rent</li>
+                </ul>
+                <a href="/" class="btn btn-outline">Get Started</a>
+            </div>
+            <div class="card featured">
+                <p class="badge">MOST POPULAR</p>
+                <p class="name">Pro</p>
+                <p class="price">AED 299</p>
+                <p class="period">one-time payment</p>
+                <ul>
+                    <li>100 post generations</li>
+                    <li>All 8 layout styles</li>
+                    <li>7 Instagram captions</li>
+                    <li>Stories, WhatsApp & LinkedIn</li>
+                    <li>Generation history saved</li>
+                </ul>
+                <a href="/" class="btn btn-gold">Get Pro</a>
+            </div>
+            <div class="card">
+                <p class="name">Agency</p>
+                <p class="price">AED 999</p>
+                <p class="period">one-time payment</p>
+                <ul>
+                    <li>500 post generations</li>
+                    <li>All 8 layout styles</li>
+                    <li>7 Instagram captions</li>
+                    <li>Stories, WhatsApp & LinkedIn</li>
+                    <li>Team use, never expires</li>
+                </ul>
+                <a href="/" class="btn btn-outline">Get Agency</a>
+            </div>
+        </div>
+
+        <p class="note">All plans include a 1 free generation on sign up — no payment required to try.</p>
+
+        <div style="margin-top:48px;" class="faq">
+            <h2>Frequently Asked Questions</h2>
+            <div class="faq-item">
+                <p class="faq-q">Do credits expire?</p>
+                <p class="faq-a">No — credits never expire. Use them at your own pace.</p>
+            </div>
+            <div class="faq-item">
+                <p class="faq-q">What is a generation?</p>
+                <p class="faq-a">One generation = 1 complete 7-day content plan including 7 Instagram posts, 3 story
+                    ideas, 1 WhatsApp broadcast, and 1 LinkedIn post.</p>
+            </div>
+            <div class="faq-item">
+                <p class="faq-q">Can I try before paying?</p>
+                <p class="faq-a">Yes — every account gets 1 free generation on sign up. No payment required.</p>
+            </div>
+            <div class="faq-item">
+                <p class="faq-q">What languages are supported?</p>
+                <p class="faq-a">English. The bilingual layout style formats content to appeal to Arab investors with
+                    appropriate tone and hashtags, but captions are generated in English.</p>
+            </div>
+            <div class="faq-item">
+                <p class="faq-q">Can I get a refund?</p>
+                <p class="faq-a">Yes — if you have used fewer than 3 credits within 7 days of purchase. See our <a
+                        href="/refunds">Refund Policy</a>.</p>
+            </div>
+        </div>
+    </div>
+    <footer>
+        <a href="/">DubaiPostAI</a> &middot;
+        <a href="/terms">Terms</a> &middot;
+        <a href="/privacy">Privacy</a> &middot;
+        <a href="/refunds">Refunds</a> &middot;
+        Built by <a href="https://www.linkedin.com/in/rahul-verma-b9174389/" target="_blank">Rahul Verma</a>
+    </footer>
+    </div>
+</body>
+
+</html>

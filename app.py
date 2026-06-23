@@ -710,6 +710,19 @@ def webhook():
         return jsonify({"error": str(e)}), 400
     return jsonify({"status": "ok"})
 
+
+@app.route("/terms")
+def terms():
+    return render_template("terms.html")
+
+@app.route("/privacy")
+def privacy():
+    return render_template("privacy.html")
+
+@app.route("/refunds")
+def refunds():
+    return render_template("refunds.html")
+
 if __name__ == "__main__":
     init_db()
     app.run(debug=True, port=5000)
