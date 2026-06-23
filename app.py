@@ -555,13 +555,7 @@ def get_sample_output(prop):
 def index():
     user = None
     if "user_id" in session:
-        conn = sqlite3.connect("users.db")
-        c = conn.cursor()
-        c.execute("SELECT email, credits FROM users WHERE id=?", (session["user_id"],))
-        row = c.fetchone()
-        conn.close()
-        if row:
-            user = get_user_by_id(session["user_id"])
+        user = get_user_by_id(session["user_id"])
     return render_template("index.html", user=user)
 
 @app.route("/generate", methods=["POST"])
