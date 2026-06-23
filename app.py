@@ -2,6 +2,8 @@ from flask import Flask, render_template, request, jsonify, session, redirect, u
 import sqlite3
 import hashlib
 import secrets
+
+from streamlit import user
 import bcrypt
 import time
 from collections import defaultdict
@@ -567,12 +569,8 @@ def generate():
     if is_rate_limited(f"gen_{session['user_id']}", max_requests=10, window=60):
         return jsonify({"error": "Too many requests. Please wait a moment."}), 429
 
-    conn = sqlite3.connect("users.db")
-    c = conn.cursor()
-    c.execute("SELECT credits FROM users WHERE id=?", (session["user_id"],))
-    row = c.fetchone()
-    conn.close()
-    if not row or row[0] <= 0:
+    user = get_user_by_id(session["user_id"])
+    if not user or user["credits"] <= 0:
         return jsonify({"error": "No credits remaining", "no_credits": True}), 402
 
     data = request.get_json()
@@ -643,11 +641,6 @@ def logout():
 def get_credits():
     if "user_id" not in session:
         return jsonify({"credits": 0})
-    conn = sqlite3.connect("users.db")
-    c = conn.cursor()
-    c.execute("SELECT credits FROM users WHERE id=?", (session["user_id"],))
-    row = c.fetchone()
-    conn.close()
     user = get_user_by_id(session["user_id"])
     return jsonify({"credits": user["credits"]}) if user else jsonify({"credits": 0})
 
@@ -662,12 +655,8 @@ def create_checkout():
         "unlimited": {"credits": 500, "price": 99900, "name": "Agency — 500 Posts"},
     }
     pkg = packages.get(data.get("package", "starter"), packages["starter"])
-    conn = sqlite3.connect("users.db")
-    c = conn.cursor()
-    c.execute("SELECT email FROM users WHERE id=?", (session["user_id"],))
-    row = c.fetchone()
-    conn.close()
-    email = row[0] if row else ""
+    user = get_user_by_id(session["user_id"])
+    email = user["email"] if user else ""
     try:
         checkout = stripe.checkout.Session.create(
             payment_method_types=["card"],
@@ -694,12 +683,7 @@ def success():
             if co.payment_status == "paid":
                 email   = co.metadata.get("user_email")
                 credits = int(co.metadata.get("credits", 30))
-                conn = sqlite3.connect("users.db")
-                c = conn.cursor()
-                c.execute("UPDATE users SET credits=credits+?, plan='paid' WHERE email=?",
-                          (credits, email))
-                conn.commit()
-                conn.close()
+                add_credits(email, credits)
         except Exception:
             pass
     return render_template("success.html")
@@ -722,12 +706,7 @@ def webhook():
                 email = s.get("metadata", {}).get("user_email")
                 credits = int(s.get("metadata", {}).get("credits", 30))
                 if email:
-                    conn = sqlite3.connect("users.db")
-                    c = conn.cursor()
-                    c.execute("UPDATE users SET credits=credits+?, plan='paid' WHERE email=?",
-                              (credits, email))
-                    conn.commit()
-                    conn.close()
+                    add_credits(email, credits)
     except Exception as e:
         print(f"Webhook error: {e}")
         return jsonify({"error": str(e)}), 400
