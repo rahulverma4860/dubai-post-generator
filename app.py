@@ -112,7 +112,7 @@ def create_user(email, password):
     hashed = bcrypt.hashpw(password.encode(), bcrypt.gensalt()).decode()
     ph = "%s" if is_postgres() else "?"
     try:
-        c.execute(f"INSERT INTO users (email,password,credits) VALUES ({ph},{ph},1)", (email, hashed))
+        c.execute(f"INSERT INTO users (email,password,credits) VALUES ({ph},{ph},3)", (email, hashed))
         conn.commit(); conn.close(); return True
     except Exception:
         conn.close(); return False
